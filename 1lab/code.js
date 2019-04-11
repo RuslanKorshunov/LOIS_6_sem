@@ -1,12 +1,17 @@
-var regex=/^(\((!?[A-Z]{1}&)+!?[A-Z]{1}\)\|)+\((!?[A-Z]{1}&)+!?[A-Z]{1}\)$/;
+var REGEX=/^\(\(!?[A-Z]{1}(&!?[A-Z]){0,}\)(\|\(!?[A-Z]{1}(&!?[A-Z]){0,}\)){1,}\)$/;
+var DISJUNCTION = "|";
+var NEGATION = "!";
+var CONJUNCTION = "&";
 var formulaMain="";
 
+//author=Korshunov
 function readInput()
 {
   formulaMain=document.getElementById('FirstLine').value;
-  if(formulaMain.search(regex)!=-1)
+  if(formulaMain.search(REGEX)!=-1)
   {
-    var formulaSplited=splitFormula(formulaMain, '|');
+    formulaMain=formulaMain.substring(1, formulaMain.length-1);
+    var formulaSplited=splitFormula(formulaMain, DISJUNCTION);
     if(!findSameElements(formulaSplited))
     {
       var regexCNF=new RegExp(createRegexCNF(formulaSplited[0]));
@@ -46,11 +51,12 @@ function readInput()
   }
 }
 
+//author=Korshunov
 function createRegexCNF(cnf)
 {
   var result="";
   cnf=cnf.substring(1, cnf.length-1);
-  var variables=splitFormula(cnf, '&');
+  var variables=splitFormula(cnf, CONJUNCTION);
   variables=deleteNegation(variables);
   if(!findSameElements(variables))
   {
@@ -61,7 +67,7 @@ function createRegexCNF(cnf)
       result+=variables[i];
       if(i!=variables.length-1)
       {
-        result+="&";
+        result+=CONJUNCTION;
       }
     }
     //result+="\)$";
@@ -69,6 +75,7 @@ function createRegexCNF(cnf)
   return result;
 }
 
+//author=Korshunov
 function findSameElements(array)
 {
   var answer=false;
@@ -90,17 +97,19 @@ function findSameElements(array)
   return answer;
 }
 
+//author=Korshunov
 function splitFormula(formula, reg)
 {
   var result=formula.split(reg);
   return result;
 }
 
+//author=Korshunov
 function deleteNegation(array)
 {
   for(var i=0; i<array.length; i++)
   {
-    var index=array[i].indexOf("!", 0);
+    var index=array[i].indexOf(NEGATION, 0);
     if(index!=-1)
     {
       array[i]=array[i].substring(1);
@@ -109,6 +118,7 @@ function deleteNegation(array)
   return array;
 }
 
+//author=Korshunov
 function showResult(message)
 {
   var inf=document.getElementById('Inf');
