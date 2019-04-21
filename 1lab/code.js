@@ -1,53 +1,78 @@
-var REGEX=/^\(\(!?[A-Z]{1}(&!?[A-Z]){0,}\)(\|\(!?[A-Z]{1}(&!?[A-Z]){0,}\)){1,}\)$/;
-var DISJUNCTION = "|";
+//константы СДНФ не считаются
+var REGEX = /^\(\(!?[A-Z]{1}(&!?[A-Z]){0,}\)(\|\(!?[A-Z]{1}(&!?[A-Z]){0,}\)){0,}\)$/;
+var SYMBOL_REGEX = /^!?[A-Z]|/;
+var CONJUNCTION_REGEX = /^\(([A-Z]|\(![A-Z]\))(&([A-Z]|\(![A-Z]\))){1,}\)$/;
+var DISJUNCTION_REGEX = /^$/;
+var DISJUNCTION = "\|";
 var NEGATION = "!";
 var CONJUNCTION = "&";
+var ANSWER_POS="Формула является СДНФ";
+var ANSWER_NEG="Формула не является СДНФ";
 var formulaMain="";
 
 //author=Korshunov
 function readInput()
 {
   formulaMain=document.getElementById('FirstLine').value;
-  if(formulaMain.search(REGEX)!=-1)
+  if(formulaMain.match(DISJUNCTION_REGEX)!=null)
   {
-    formulaMain=formulaMain.substring(1, formulaMain.length-1);
-    var formulaSplited=splitFormula(formulaMain, DISJUNCTION);
-    if(!findSameElements(formulaSplited))
+    checkFormula();
+  }
+  else
+  {
+    if(formulaMain.match(CONJUNCTION_REGEX)!=null)
     {
-      var regexCNF=new RegExp(createRegexCNF(formulaSplited[0]));
-      if(regexCNF!="")
+      checkFormula();
+    }
+    else
+    {
+      if(formulaMain.match(SYMBOL_REGEX)!=null)
       {
-        var result=true;
-        for(var i=0; i<formulaSplited.length; i++)
-        {
-          if(formulaSplited[i].search(regexCNF)==-1)
-          {
-            result=false;
-            break;
-          }
-        }
-        if(result)
-        {
-          showResult("Формула является СДНФ");
-        }
-        else
-        {
-          showResult("Формула не является СДНФ");
-        }
+        checkFormula();
       }
       else
       {
-        showResult("Формула не является СДНФ");
+        showResult(ANSWER_NEG);
+      }
+    }
+  }
+}
+
+function checkFormula()
+{
+  formulaMain=formulaMain.substring(1, formulaMain.length-1);
+  var formulaSplited=splitFormula(formulaMain, DISJUNCTION);
+  if(!findSameElements(formulaSplited))
+  {
+    var regexCNF=new RegExp(createRegexCNF(formulaSplited[0]));
+    if(regexCNF!="")
+    {
+      var result=true;
+      for(var i=0; i<formulaSplited.length; i++)
+      {
+        if(formulaSplited[i].search(regexCNF)==-1)
+        {
+          result=false;
+          break;
+        }
+      }
+      if(result)
+      {
+        showResult(ANSWER_POS);
+      }
+      else
+      {
+        showResult(ANSWER_NEG);
       }
     }
     else
     {
-      showResult("Формула не является СДНФ,\nт.к. содержит одинаковые конъюнкции");
+      showResult(ANSWER_NEG);
     }
   }
   else
   {
-    showResult("Формула введена некорректно");
+    showResult(ANSWER_NEG);
   }
 }
 
