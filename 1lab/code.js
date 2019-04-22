@@ -1,9 +1,10 @@
 //константы СДНФ не считаются
 var REGEX = /^\(\(!?[A-Z]{1}(&!?[A-Z]){0,}\)(\|\(!?[A-Z]{1}(&!?[A-Z]){0,}\)){0,}\)$/;
-var SYMBOL_REGEX = /^!?[A-Z]|/;
+var SYMBOL_REGEX = /^[A-Z]|\(![A-Z]\)$/;
 var CONJUNCTION_REGEX = /^\(([A-Z]|\(![A-Z]\))(&([A-Z]|\(![A-Z]\))){1,}\)$/;
-var DISJUNCTION_REGEX = /^$/;
-var DISJUNCTION = "\|";
+var DISJUNCTION_REGEX = /^\((([A-Z]|\(![A-Z]\))|(\(([A-Z]|\(![A-Z]\))(&([A-Z]|\(![A-Z]\))){1,}\)))(\|(([A-Z]|\(![A-Z]\))|(\(([A-Z]|\(![A-Z]\))(&([A-Z]|\(![A-Z]\))){1,}\)))){1,}\)$/;
+var SUBFORMULA_REGEX = /\(?(([A-Z]|\(!?[A-Z]\))&?){1,}\)?/;
+var DISJUNCTION = "|";
 var NEGATION = "!";
 var CONJUNCTION = "&";
 var ANSWER_POS="Формула является СДНФ";
@@ -48,7 +49,7 @@ function checkFormula()
     if(regexCNF!="")
     {
       var result=true;
-      for(var i=0; i<formulaSplited.length; i++)
+      for(var i=1; i<formulaSplited.length; i++)
       {
         if(formulaSplited[i].search(regexCNF)==-1)
         {
@@ -79,23 +80,24 @@ function checkFormula()
 //author=Korshunov
 function createRegexCNF(cnf)
 {
+  var REGEX=/[A-Z]/;
+  var elements=cnf.match(/[A-Z]/g);
   var result="";
-  cnf=cnf.substring(1, cnf.length-1);
-  var variables=splitFormula(cnf, CONJUNCTION);
-  variables=deleteNegation(variables);
-  if(!findSameElements(variables))
+  if(elements.length>1)
   {
-    //result="^\(";
-    for(var i=0; i<variables.length; i++)
+    result+="(\\(";
+  }
+  for(var i=0; i<elements.length; i++)
+  {
+    result+="("+elements[i]+"|\\(!"+elements[i]+"\\))";
+    if(i!=elements.length-1)
     {
-      result+="!?";
-      result+=variables[i];
-      if(i!=variables.length-1)
-      {
-        result+=CONJUNCTION;
-      }
+      result+="&";
     }
-    //result+="\)$";
+  }
+  if(elements.length>1)
+  {
+    result+="\\))";
   }
   return result;
 }
