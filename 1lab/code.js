@@ -1,9 +1,4 @@
-//константы СДНФ не считаются
-var REGEX = /^\(\(!?[A-Z]{1}(&!?[A-Z]){0,}\)(\|\(!?[A-Z]{1}(&!?[A-Z]){0,}\)){0,}\)$/;
-var SYMBOL_REGEX = /^[A-Z]|\(![A-Z]\)$/;
-var CONJUNCTION_REGEX = /^\(([A-Z]|\(![A-Z]\))(&([A-Z]|\(![A-Z]\))){1,}\)$/;
-var DISJUNCTION_REGEX = /^\((([A-Z]|\(![A-Z]\))|(\(([A-Z]|\(![A-Z]\))(&([A-Z]|\(![A-Z]\))){1,}\)))(\|(([A-Z]|\(![A-Z]\))|(\(([A-Z]|\(![A-Z]\))(&([A-Z]|\(![A-Z]\))){1,}\)))){1,}\)$/;
-var SUBFORMULA_REGEX = /\(?(([A-Z]|\(!?[A-Z]\))&?){1,}\)?/;
+var DISJUNCTION_REGEX = /^([A-Z]|\(![A-Z]\)|(\((([A-Z]|(\(![A-Z]\)))|(\((([A-Z]|(\(![A-Z]\)))|(\(([A-Z]|(\(![A-Z]\)))(&([A-Z]|(\(![A-Z]\))))+\)))(&(([A-Z]|(\(![A-Z]\)))|(\(([A-Z]|(\(![A-Z]\)))(&([A-Z]|(\(![A-Z]\))))+\))))+\)))(\|(([A-Z]|(\(![A-Z]\)))|(\((([A-Z]|(\(![A-Z]\)))|(\(([A-Z]|(\(![A-Z]\)))(&([A-Z]|(\(![A-Z]\))))+\)))(&(([A-Z]|(\(![A-Z]\)))|(\(([A-Z]|(\(![A-Z]\)))(&([A-Z]|(\(![A-Z]\))))+\))))+\))))*\)))$/;
 var DISJUNCTION = "|";
 var NEGATION = "!";
 var CONJUNCTION = "&";
@@ -21,21 +16,7 @@ function readInput()
   }
   else
   {
-    if(formulaMain.match(CONJUNCTION_REGEX)!=null)
-    {
-      checkFormula();
-    }
-    else
-    {
-      if(formulaMain.match(SYMBOL_REGEX)!=null)
-      {
-        checkFormula();
-      }
-      else
-      {
-        showResult(ANSWER_NEG);
-      }
-    }
+    showResult(ANSWER_NEG);
   }
 }
 
@@ -45,13 +26,15 @@ function checkFormula()
   var formulaSplited=splitFormula(formulaMain, DISJUNCTION);
   if(!findSameElements(formulaSplited))
   {
-    var regexCNF=new RegExp(createRegexCNF(formulaSplited[0]));
-    if(regexCNF!="")
+    var regex=createRegexCNF(formulaSplited[0]);
+    if(regex!="")
     {
+      var regexCNF=new RegExp(regex);
       var result=true;
       for(var i=1; i<formulaSplited.length; i++)
       {
-        if(formulaSplited[i].search(regexCNF)==-1)
+        var subformula=formulaSplited[i].replace(/\(|\)/g, "");
+        if(subformula.search(regexCNF)==-1)
         {
           result=false;
           break;
@@ -80,24 +63,20 @@ function checkFormula()
 //author=Korshunov
 function createRegexCNF(cnf)
 {
-  var REGEX=/[A-Z]/;
   var elements=cnf.match(/[A-Z]/g);
   var result="";
-  if(elements.length>1)
+  if(!findSameElements(elements))
   {
-    result+="(\\(";
-  }
-  for(var i=0; i<elements.length; i++)
-  {
-    result+="("+elements[i]+"|\\(!"+elements[i]+"\\))";
-    if(i!=elements.length-1)
+    result+="^";
+    for(var i=0; i<elements.length; i++)
     {
-      result+="&";
+      result+="!?"+elements[i];
+      if(i!=elements.length-1)
+      {
+        result+="&";
+      }
     }
-  }
-  if(elements.length>1)
-  {
-    result+="\\))";
+    result+="$";
   }
   return result;
 }
